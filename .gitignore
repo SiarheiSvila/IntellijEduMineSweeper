@@ -1,0 +1,7 @@
+.idea/
+gradle/
+.gradle/
+build/*
+Minesweeper/task/build/
+Minesweeper/task/out
+!Minesweeper/src/mineswweper/
