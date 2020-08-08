@@ -144,6 +144,149 @@ files:
         }
     }
   learner_created: false
+- name: src/minesweeper/FieldGenerator.java
+  visible: true
+  text: "package minesweeper;\n\nimport minesweeper.entities.Cell;\nimport minesweeper.entities.Field;\n\
+    \nimport java.util.Random;\n\npublic class FieldGenerator {\n    private Random\
+    \ random = new Random();\n\n    private static final int FIELD_X_SIZE = 9;\n \
+    \   private static final int FIELD_Y_SIZE = 9;\n\n    public void generateField(int\
+    \ fullBombAmount) {\n        Field field = new Field(FIELD_X_SIZE, FIELD_Y_SIZE);\n\
+    \        for (int y = 0; y < field.getySize(); y++) {\n            int bombsAmount\
+    \ = getCurrentRowsBombsAmount(field, fullBombAmount, y);\n            for (int\
+    \ j = 0; j < bombsAmount; j++) {\n                int bombPositionX = random.nextInt(field.getxSize());\n\
+    \                while (field.isBomb(bombPositionX, y)) {\n                  \
+    \  bombPositionX = random.nextInt(field.getxSize());\n                }\n    \
+    \            field.setBomb(bombPositionX, y);\n                fullBombAmount--;\n\
+    \            }\n        }\n\n        if (fullBombAmount != 0) {\n            placeRemainingBombs(field,\
+    \ fullBombAmount);\n        }\n\n        field.printField();\n    }\n\n    private\
+    \ int getCurrentRowsBombsAmount(Field field, int fullBombAmount, int y) {\n  \
+    \      int bombsAmount = fullBombAmount + 1;\n        while (bombsAmount > fullBombAmount)\
+    \ {\n            int avgBombsPerRow = fullBombAmount/(field.getySize()-y) == 0\
+    \ ? 1 : fullBombAmount/(field.getySize()-y);\n            bombsAmount = random.nextInt(avgBombsPerRow+1)\
+    \ + avgBombsPerRow/2;\n        }\n        bombsAmount = Math.min(bombsAmount,\
+    \ field.getxSize());\n        return bombsAmount;\n    }\n    \n    private void\
+    \ placeRemainingBombs(Field field, int bombAmount) {\n        while (bombAmount\
+    \ != 0) {\n            Cell freeCell = field.getFreeCell();\n            field.setBomb(freeCell);\n\
+    \            bombAmount--;\n        }\n    }\n\n\n}\n"
+  learner_created: true
+- name: src/minesweeper/actions/FieldAction.java
+  visible: true
+  text: |
+    package minesweeper.actions;
+
+    import minesweeper.entities.Cell;
+    import minesweeper.entities.Field;
+
+    import java.util.Random;
+
+    public class FieldAction {
+        private Random random = new Random();
+
+        public int getLessFiledX(Field field) {
+            int maxFreeCells = -1;
+            int maxFreeCellX = -1;
+            for (int x = 0; x < field.getxSize(); x++) {
+                int freeCellsAmount = 0;
+                for (int y = 0; y < field.getySize(); y++) {
+                    if (!field.isBomb(x, y)) {
+                        freeCellsAmount++;
+                    }
+                }
+                if (freeCellsAmount > maxFreeCells) {
+                    maxFreeCellX = x;
+                    maxFreeCells = freeCellsAmount;
+                }
+            }
+            return maxFreeCellX;
+        }
+
+        public Cell getFreeCellForX(Field field, int rowX) {
+            int startingPoint = random.nextInt(field.getySize());
+            while (field.isBomb(rowX, startingPoint)) {
+                startingPoint = startingPoint == field.getySize()-1 ? 0 : startingPoint+1 ;
+            }
+            return new Cell(rowX, startingPoint);
+        }
+    }
+  learner_created: true
+- name: src/minesweeper/entities/Cell.java
+  visible: true
+  text: |
+    package minesweeper.entities;
+
+    public class Cell {
+        private int x;
+        private int y;
+
+        public Cell(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        public int getX() {
+            return x;
+        }
+
+        public int getY() {
+            return y;
+        }
+    }
+  learner_created: true
+- name: src/minesweeper/InputScanner.java
+  visible: true
+  text: |
+    package minesweeper;
+
+    import java.util.Scanner;
+
+    public class InputScanner {
+        private Scanner scanner;
+
+        public InputScanner() {
+            scanner = new Scanner(System.in);
+        }
+
+        public int getInt() {
+            return scanner.nextInt();
+        }
+    }
+  learner_created: true
+- name: src/minesweeper/entities/Field.java
+  visible: true
+  text: "package minesweeper.entities;\n\nimport minesweeper.actions.FieldAction;\n\
+    \npublic class Field {\n    private FieldAction fieldAction;\n    \n    private\
+    \ final int xSize;\n    private final int ySize;\n    private char[][] field;\n\
+    \n    public Field(int xSize, int ySize) {\n        fieldAction = new FieldAction();\n\
+    \        \n        this.xSize = xSize;\n        this.ySize = ySize;\n        field\
+    \ = new char[xSize][ySize];\n        generateEmptyField();\n    }\n\n    public\
+    \ int getxSize() {\n        return xSize;\n    }\n\n    public int getySize()\
+    \ {\n        return ySize;\n    }\n    \n    public void setBomb(Cell cell) {\n\
+    \        field[cell.getX()][cell.getY()] = 'X';\n    }\n\n    public void setBomb(int\
+    \ x, int y) {\n        field[x][y] = 'X';\n    }\n\n    public boolean isBomb(Cell\
+    \ cell) {\n        return field[cell.getX()][cell.getY()] == 'X';\n    }\n\n \
+    \   public boolean isBomb(int x, int y) {\n        return field[x][y] == 'X';\n\
+    \    }\n\n    public void printField() {\n        for (char[] rows : field) {\n\
+    \            for (char cell : rows) {\n                System.out.print(cell);\n\
+    \            }\n            System.out.println();\n        }\n    }\n    \n  \
+    \  private void generateEmptyField() {\n        for (int y = 0; y < xSize; y++)\
+    \ {\n            for (int x = 0; x < ySize; x++) {\n                field[y][x]\
+    \ = '.';\n            }\n        }\n    }\n\n    public Cell getFreeCell() {\n\
+    \        int lessFiledX = fieldAction.getLessFiledX(this);\n        return fieldAction.getFreeCellForX(this,\
+    \ lessFiledX);\n    }\n}\n"
+  learner_created: true
+- name: src/minesweeper/entities/CellType.java
+  visible: true
+  learner_created: true
+- name: src/minesweeper/placers/BombPlacer.java
+  visible: true
+  learner_created: true
+- name: src/minesweeper/placers/NumberPlacer.java
+  visible: true
+  learner_created: true
 feedback_link: https://hyperskill.org/projects/77/stages/428/implement
-status: Unchecked
-record: -1
+status: Solved
+feedback:
+  message: Congratulations! Continue on <a href="https://hyperskill.org/projects/77/stages/428/implement">JetBrains
+    Academy</a>
+  time: Sat, 08 Aug 2020 21:29:22 UTC
+record: 3
